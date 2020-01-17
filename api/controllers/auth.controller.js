@@ -17,9 +17,17 @@ exports.register = (req, res) => {
         return res.status(500).json({
           message: 'Email is already in use'
         });
-      } else {
-        return user.save();
       }
+
+      const { password, confirmPassword } = req.body;
+
+      if (password !== confirmPassword) {
+        return res.status(500).json({
+          message: 'Passwords does not much'
+        });
+      }
+
+      return user.save();
     })
     .then(response => {
       res.status(200).json({

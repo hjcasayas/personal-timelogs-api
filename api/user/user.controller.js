@@ -1,37 +1,58 @@
 const User = require('./user.model');
-
-exports.login = (req, res) => {
-  res.send('login');
-};
+const bcrypt = require('bcryptjs');
 
 exports.register = (req, res) => {
-  const { email, password } = req.body;
-  const user = new User({
-    email,
-    password
-  });
+  const { email, password, confirmPassword } = req.body;
 
-  User.find({ email: user.email })
-    .then(duplicateUsers => {
+  User.find({ email: email.trim() })
+    .then(async duplicateUsers => {
       if (duplicateUsers.length > 0) {
         return res.status(500).json({
           message: 'Email is already in use'
         });
-      } else {
-        return user.save();
       }
-    })
-    .then(response => {
-      res.status(200).json({
-        message: 'User successfully added',
-        user: response
+
+      if (password !== confirmPassword) {
+        return res.status(500).json({
+          message: 'Passwords does not much'
+        });
+      }
+
+      bcrypt.genSalt(10, (err, salt) => {
+        if (err !== null) {
+          return res.status(500).json({
+            message: 'Oh no! Something went wrong.'
+          });
+        }
+
+        bcrypt.hash(password, salt, (err, hash) => {
+          if (err !== null) {
+            return res.status(500).json({
+              message: 'Oh no! Something went wrong.'
+            });
+          }
+
+          const user = new User({
+            email: email.trim(),
+            password: hash
+          });
+
+          user.save().then(response => {
+            res.status(200).json({
+              message: 'User successfully added',
+              user: {
+                _id: response._id,
+                email: response.email
+              }
+            });
+          });
+        });
       });
     })
     .catch(e => {
-      console.log(e);
+      res.status(500).json({
+        message: 'Oh no! Something went wrong.',
+        error: e
+      });
     });
-};
-
-exports.logout = (req, res) => {
-  res.send('logout');
 };
