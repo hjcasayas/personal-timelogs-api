@@ -37,15 +37,23 @@ exports.register = (req, res) => {
             password: hash
           });
 
-          user.save().then(response => {
-            res.status(200).json({
-              message: 'User successfully added',
-              user: {
-                _id: response._id,
-                email: response.email
-              }
+          user
+            .save()
+            .then(response => {
+              res.status(200).json({
+                message: 'User successfully added',
+                user: {
+                  _id: response._id,
+                  email: response.email
+                }
+              });
+            })
+            .catch(e => {
+              res.status(500).json({
+                message: 'Oh no! Something went wrong.',
+                error: e
+              });
             });
-          });
         });
       });
     })
