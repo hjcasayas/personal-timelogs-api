@@ -1,5 +1,6 @@
 const User = require('./user.model');
 const bcrypt = require('bcryptjs');
+const sanitizeHTML = require('sanitize-html');
 
 exports.register = (req, res) => {
   const { email, password, confirmPassword } = req.body;
@@ -33,7 +34,7 @@ exports.register = (req, res) => {
           }
 
           const user = new User({
-            email: email.trim(),
+            email: sanitizeHTML(email.trim()),
             password: hash
           });
 
