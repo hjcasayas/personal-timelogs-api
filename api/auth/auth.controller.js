@@ -1,5 +1,6 @@
 const User = require('../user/user.model');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 exports.login = (req, res) => {
   const { email, password } = req.body;
@@ -20,11 +21,16 @@ exports.login = (req, res) => {
             .json({ message: 'Email/Password is not recognized' });
         }
 
+        const token = jwt.sign({ _id: user._id }, process.env.JWTSECRET, {
+          expiresIn: '1d'
+        });
+
         res.status(200).json({
           message: 'Succefully Logged In',
           user: {
             _id: user._id,
-            email: user.email
+            email: user.email,
+            token
           }
         });
       });
